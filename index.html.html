@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RTP Insight PRO — Análise Inteligente de Slots</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+<style>
+/* ═══════════════════════════════════════════════
+   DESIGN TOKENS & RESET
+═══════════════════════════════════════════════ */
+:root {
+  --bg:        #0a0f1e;
+  --surface:   #111827;
+  --surface2:  #1a2236;
+  --surface3:  #222d45;
+  --border:    rgba(255,255,255,0.06);
+  --border2:   rgba(255,255,255,0.12);
+  --accent:    #3b82f6;
+  --accent2:   #6366f1;
+  --gold:      #f59e0b;
+  --green:     #10b981;
+  --yellow:    #f59e0b;
+  --red:       #ef4444;
+  --text:      #e2e8f0;
+  --text2:     #94a3b8;
+  --text3:     #475569;
+  --font-head: 'Syne', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --font-body: 'DM Sans', sans-serif;
+  --r:         12px;
+  --r2:        20px;
+  --shadow:    0 4px 32px rgba(0,0,0,0.45);
+  --shadow2:   0 2px 8px rgba(0,0,0,0.3);
+  --glow:      0 0 40px rgba(59,130,246,0.15);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+/* animated bg grid */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ═══════════════════════════════════════════════
+   UTILITY
+═══════════════════════════════════════════════ */
+.hidden { display: none !important; }
+.flex  { display: flex; }
+.col   { flex-direction: column; }
+.gap2  { gap: 8px; }
+.gap3  { gap: 12px; }
+.gap4  { gap: 16px; }
+.gap6  { gap: 24px; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.text-sm  { font-size: 13px; }
+.text-xs  { font-size: 11px; }
+.mono     { font-family: var(--font-mono); }
+.bold     { font-weight: 700; }
+.muted    { color: var(--text2); }
+.truncate { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+button {
+  cursor: pointer;
+  border: none;
+  font-family: var(--font-body);
+  font-size: 14px;
+  transition: all .2s ease;
+}
+input {
+  font-family: var(--font-body);
+  font-size: 14px;
+}
+
+/* ═══════════════════════════════════════════════
+   PAGES WRAPPER
+═══════════════════════════════════════════════ */
+.page { position: relative; z-index: 1; animation: fadeUp .4s ease both; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════════════════════════════════════════
+   LOGIN PAGE
+═══════════════════════════════════════════════ */
+#loginPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.login-wrap {
+  width: 100%;
+  max-width: 420px;
+}
+.login-logo {
+  text-align: center;
+  margin-bottom: 40px;
+}
+.login-logo .logo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, var(--surface2), var(--surface3));
+  border: 1px solid var(--border2);
+  border-radius: 16px;
+  padding: 14px 22px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow), var(--glow);
+}
+.logo-icon {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+}
+.logo-text { font-family: var(--font-head); font-weight: 800; font-size: 20px; letter-spacing: -0.5px; }
+.logo-text span { color: var(--accent); }
+.login-subtitle { color: var(--text2); font-size: 14px; }
+
+.login-card {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  padding: 36px;
+  box-shadow: var(--shadow), var(--glow);
+}
+.login-card h2 {
+  font-family: var(--font-head);
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.login-card p { color: var(--text2); font-size: 13px; margin-bottom: 28px; }
+
+.field { margin-bottom: 18px; }
+.field label { display: block; font-size: 12px; font-weight: 500; color: var(--text2); margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.8px; }
+.field input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  padding: 12px 14px;
+  color: var(--text);
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+.field input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+}
+.field input::placeholder { color: var(--text3); }
+
+.btn-primary {
+  width: 100%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  border-radius: var(--r);
+  padding: 13px;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.3px;
+  box-shadow: 0 4px 16px rgba(59,130,246,0.35);
+  margin-top: 8px;
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(59,130,246,0.45); }
+.btn-primary:active { transform: translateY(0); }
+
+.error-msg {
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.3);
+  color: #fca5a5;
+  border-radius: var(--r);
+  padding: 11px 14px;
+  font-size: 13px;
+  margin-top: 14px;
+  text-align: center;
+}
+
+/* ═══════════════════════════════════════════════
+   MAIN APP LAYOUT
+═══════════════════════════════════════════════ */
+#appPage { min-height: 100vh; display: flex; flex-direction: column; }
+
+/* HEADER */
+.header {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(10,15,30,0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  height: 62px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.header-logo { display: flex; align-items: center; gap: 10px; }
+.header-logo .logo-badge-sm {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+.header-logo .name {
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: 17px;
+  letter-spacing: -0.3px;
+}
+.header-logo .name span { color: var(--accent); }
+.header-logo .badge-pro {
+  background: linear-gradient(135deg, var(--gold), #d97706);
+  color: #000;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 20px;
+  letter-spacing: 0.8px;
+}
+
+.header-right { display: flex; align-items: center; gap: 16px; }
+
+.usage-pill {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 12px;
+  display: flex; align-items: center; gap: 7px;
+}
+.usage-pill .dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+.user-pill {
+  display: flex; align-items: center; gap: 9px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 5px 14px 5px 6px;
+  cursor: pointer;
+}
+.user-avatar {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+}
+.user-name { font-size: 13px; font-weight: 500; }
+
+.btn-logout {
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.25);
+  color: #fca5a5;
+  border-radius: var(--r);
+  padding: 7px 14px;
+  font-size: 13px;
+}
+.btn-logout:hover { background: rgba(239,68,68,0.2); }
+
+/* NAV TABS */
+.nav-tabs {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  display: flex; gap: 4px;
+}
+.nav-tab {
+  background: transparent;
+  color: var(--text2);
+  padding: 14px 18px;
+  font-size: 13px; font-weight: 500;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  transition: color .2s, border-color .2s;
+}
+.nav-tab:hover { color: var(--text); }
+.nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* MAIN CONTENT */
+.main-content { flex: 1; padding: 32px 24px; max-width: 1200px; margin: 0 auto; width: 100%; }
+
+/* ═══════════════════════════════════════════════
+   ANALYZER TAB
+═══════════════════════════════════════════════ */
+.analyzer-hero {
+  text-align: center;
+  margin-bottom: 40px;
+}
+.analyzer-hero h1 {
+  font-family: var(--font-head);
+  font-size: 36px; font-weight: 800;
+  letter-spacing: -1px;
+  background: linear-gradient(135deg, #e2e8f0, var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 10px;
+}
+.analyzer-hero p { color: var(--text2); font-size: 15px; max-width: 480px; margin: 0 auto; }
+
+.search-card {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  padding: 28px;
+  box-shadow: var(--shadow), var(--glow);
+  max-width: 640px;
+  margin: 0 auto 40px;
+}
+.search-row { display: flex; gap: 12px; }
+.search-input {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  padding: 13px 16px;
+  color: var(--text);
+  outline: none;
+  font-size: 15px;
+  transition: border-color .2s, box-shadow .2s;
+}
+.search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
+.search-input::placeholder { color: var(--text3); }
+
+.btn-analyze {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff;
+  border-radius: var(--r);
+  padding: 13px 24px;
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(59,130,246,0.3);
+}
+.btn-analyze:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(59,130,246,0.4); }
+.btn-analyze:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+/* RESULTS GRID */
+.results-section { animation: fadeUp .4s ease both; }
+.results-title {
+  font-family: var(--font-head);
+  font-size: 20px; font-weight: 700;
+  margin-bottom: 20px;
+  display: flex; align-items: center; gap: 10px;
+}
+.results-title .dot-live {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 10px var(--green);
+  animation: pulse 1.5s infinite;
+}
+
+.result-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+
+/* RESULT CARDS */
+.r-card {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  padding: 22px;
+  box-shadow: var(--shadow2);
+  transition: transform .2s, box-shadow .2s;
+}
+.r-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+
+.r-card-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 18px;
+}
+.r-game-name { font-family: var(--font-head); font-size: 18px; font-weight: 700; line-height: 1.2; }
+.r-provider { font-size: 12px; color: var(--text2); margin-top: 4px; }
+
+.risk-badge {
+  font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px;
+  text-transform: uppercase; letter-spacing: 0.7px; white-space: nowrap;
+}
+.risk-low    { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.25); }
+.risk-medium { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.25); }
+.risk-high   { background: rgba(239,68,68,0.15);  color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
+
+/* RTP big number */
+.rtp-block { text-align: center; padding: 20px 0; }
+.rtp-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.rtp-value {
+  font-family: var(--font-head);
+  font-size: 48px; font-weight: 800;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  line-height: 1;
+}
+.rtp-pct { font-size: 22px; }
+
+/* Progress bars */
+.stat-row { margin-bottom: 14px; }
+.stat-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px; }
+.stat-label .name { color: var(--text2); }
+.stat-label .val  { font-family: var(--font-mono); font-size: 11px; font-weight: 500; }
+.bar-track { height: 7px; background: var(--surface3); border-radius: 4px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 4px; transition: width .8s cubic-bezier(.4,0,.2,1); }
+.bar-green  { background: linear-gradient(90deg, #059669, #10b981); }
+.bar-yellow { background: linear-gradient(90deg, #d97706, #f59e0b); }
+.bar-red    { background: linear-gradient(90deg, #dc2626, #ef4444); }
+.bar-blue   { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+
+.vol-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 20px; padding: 5px 12px; font-size: 12px; margin-top: 4px;
+}
+
+/* Info row */
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+.info-cell {
+  background: var(--surface2); border-radius: var(--r);
+  padding: 12px; text-align: center;
+}
+.info-cell .lbl { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 4px; }
+.info-cell .val { font-family: var(--font-mono); font-size: 14px; font-weight: 500; }
+
+/* ═══════════════════════════════════════════════
+   HISTORY TAB
+═══════════════════════════════════════════════ */
+.history-list { display: flex; flex-direction: column; gap: 12px; }
+.history-item {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  padding: 16px 20px;
+  display: flex; align-items: center; gap: 16px;
+  transition: background .15s;
+}
+.history-item:hover { background: var(--surface2); }
+.h-num { font-family: var(--font-mono); font-size: 12px; color: var(--text3); width: 24px; text-align: center; }
+.h-info { flex: 1; }
+.h-game { font-weight: 600; font-size: 14px; }
+.h-prov { font-size: 12px; color: var(--text2); }
+.h-rtp  { font-family: var(--font-head); font-size: 20px; font-weight: 700; color: var(--accent); min-width: 60px; text-align: right; }
+.h-vol  { font-size: 12px; color: var(--text2); text-align: right; min-width: 50px; }
+.h-date { font-size: 11px; color: var(--text3); white-space: nowrap; }
+
+/* ═══════════════════════════════════════════════
+   ADMIN PANEL TAB
+═══════════════════════════════════════════════ */
+.admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  padding: 22px;
+}
+.stat-card .sc-label { font-size: 12px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+.stat-card .sc-val { font-family: var(--font-head); font-size: 36px; font-weight: 800; }
+.stat-card.accent .sc-val { color: var(--accent); }
+.stat-card.green  .sc-val { color: var(--green); }
+.stat-card.red    .sc-val { color: var(--red); }
+.stat-card.gold   .sc-val { color: var(--gold); }
+
+.section-title {
+  font-family: var(--font-head);
+  font-size: 17px; font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.users-table-wrap { overflow-x: auto; }
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.users-table th {
+  text-align: left;
+  padding: 11px 16px;
+  font-size: 11px;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+.users-table th:first-child { border-radius: var(--r) 0 0 0; }
+.users-table th:last-child  { border-radius: 0 var(--r) 0 0; }
+.users-table td {
+  padding: 13px 16px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.users-table tr:hover td { background: var(--surface2); }
+.users-table tr:last-child td { border-bottom: none; }
+
+.status-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 600;
+  padding: 3px 10px; border-radius: 20px;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.status-badge::before { content:''; width:6px; height:6px; border-radius:50%; }
+.s-teste   { background: rgba(245,158,11,0.1);  color: #fbbf24; border: 1px solid rgba(245,158,11,0.25); }
+.s-teste::before   { background: #fbbf24; }
+.s-ativo   { background: rgba(16,185,129,0.1);  color: #34d399; border: 1px solid rgba(16,185,129,0.25); }
+.s-ativo::before   { background: #34d399; }
+.s-bloqueado { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
+.s-bloqueado::before { background: #f87171; }
+
+.admin-btn {
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-right: 6px;
+}
+.btn-activate { background: rgba(16,185,129,0.12); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+.btn-activate:hover { background: rgba(16,185,129,0.22); }
+.btn-block    { background: rgba(239,68,68,0.12);  color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+.btn-block:hover    { background: rgba(239,68,68,0.22); }
+.btn-reset    { background: rgba(99,102,241,0.12); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.3); }
+.btn-reset:hover    { background: rgba(99,102,241,0.22); }
+
+/* ═══════════════════════════════════════════════
+   LOADING OVERLAY
+═══════════════════════════════════════════════ */
+#loadingOverlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(10,15,30,0.92);
+  backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 24px;
+}
+.loader-circle {
+  width: 68px; height: 68px;
+  border-radius: 50%;
+  border: 3px solid var(--surface3);
+  border-top-color: var(--accent);
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loader-msg {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text2);
+  letter-spacing: 0.5px;
+  min-height: 22px;
+  text-align: center;
+}
+.loader-bar-wrap { width: 220px; height: 3px; background: var(--surface3); border-radius: 2px; overflow: hidden; }
+.loader-bar { height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 2px; transition: width .4s ease; }
+
+/* ═══════════════════════════════════════════════
+   LIMIT / BLOCKED WALL
+═══════════════════════════════════════════════ */
+#limitWall {
+  position: fixed; inset: 0; z-index: 9990;
+  background: rgba(10,15,30,0.95);
+  backdrop-filter: blur(12px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+.wall-card {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  padding: 48px 40px;
+  max-width: 440px;
+  width: 100%;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.wall-icon { font-size: 48px; margin-bottom: 20px; }
+.wall-card h2 { font-family: var(--font-head); font-size: 22px; font-weight: 700; margin-bottom: 10px; }
+.wall-card p  { color: var(--text2); font-size: 14px; margin-bottom: 28px; }
+.btn-wa {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: #25d366;
+  color: #fff;
+  border-radius: var(--r);
+  padding: 14px 24px;
+  font-weight: 600;
+  font-size: 15px;
+  text-decoration: none;
+  box-shadow: 0 4px 16px rgba(37,211,102,0.3);
+  transition: transform .2s, box-shadow .2s;
+}
+.btn-wa:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(37,211,102,0.4); }
+.wall-close {
+  display: block;
+  margin-top: 16px;
+  background: transparent;
+  color: var(--text3);
+  font-size: 13px;
+  text-decoration: underline;
+}
+.wall-close:hover { color: var(--text2); }
+
+/* ═══════════════════════════════════════════════
+   EMPTY / ONBOARDING STATE
+═══════════════════════════════════════════════ */
+.empty-state {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--text2);
+}
+.empty-state .big { font-size: 48px; margin-bottom: 16px; }
+.empty-state h3 { font-family: var(--font-head); font-size: 18px; color: var(--text); margin-bottom: 8px; }
+.empty-state p { font-size: 14px; max-width: 340px; margin: 0 auto; }
+
+/* ═══════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════ */
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 16px 24px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text3);
+  position: relative; z-index: 1;
+}
+
+/* ═══════════════════════════════════════════════
+   QUICK GAMES CHIPS
+═══════════════════════════════════════════════ */
+.quick-games { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 16px; }
+.qg-chip {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 12px;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all .15s;
+}
+.qg-chip:hover { background: var(--surface3); color: var(--text); border-color: var(--accent); }
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  .header { padding: 0 16px; }
+  .header .usage-pill { display: none; }
+  .main-content { padding: 20px 16px; }
+  .analyzer-hero h1 { font-size: 26px; }
+  .search-row { flex-direction: column; }
+  .result-grid { grid-template-columns: 1fr; }
+  .login-card { padding: 24px 20px; }
+  .rtp-value { font-size: 38px; }
+  .nav-tab { padding: 12px 12px; font-size: 12px; }
+  .users-table { font-size: 12px; }
+  .users-table th, .users-table td { padding: 10px 10px; }
+}
+
+/* tag blink */
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:.3} }
+.blink { animation: blink 1s infinite; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     LOGIN PAGE
+══════════════════════════════════════════ -->
+<div id="loginPage" class="page">
+  <div class="login-wrap">
+    <div class="login-logo">
+      <div class="logo-badge">
+        <div class="logo-icon">🎰</div>
+        <div>
+          <div class="logo-text">RTP Insight <span>PRO</span></div>
+          <div class="login-subtitle">Análise Profissional de Slots</div>
+        </div>
+      </div>
+    </div>
+    <div class="login-card">
+      <h2>Entrar na plataforma</h2>
+      <p>Acesso restrito. Insira suas credenciais para continuar.</p>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="loginEmail" placeholder="seu@email.com" />
+      </div>
+      <div class="field">
+        <label>Senha</label>
+        <input type="password" id="loginPass" placeholder="••••••••" />
+      </div>
+      <button class="btn-primary" onclick="Auth.login()">Acessar Plataforma →</button>
+      <div id="loginError" class="error-msg hidden"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MAIN APP
+══════════════════════════════════════════ -->
+<div id="appPage" class="page hidden">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-logo">
+      <div class="logo-badge-sm">🎰</div>
+      <div class="name">RTP Insight <span>PRO</span></div>
+      <div class="badge-pro">PRO</div>
+    </div>
+    <div class="header-right">
+      <div class="usage-pill" id="usagePill">
+        <div class="dot"></div>
+        <span id="usageText">—</span>
+      </div>
+      <div class="user-pill">
+        <div class="user-avatar" id="userAvatar">?</div>
+        <div class="user-name" id="userNameLabel">—</div>
+      </div>
+      <button class="btn-logout" onclick="Auth.logout()">Sair</button>
+    </div>
+  </header>
+
+  <!-- NAV TABS -->
+  <nav class="nav-tabs" id="navTabs">
+    <button class="nav-tab active" onclick="UI.switchTab('analyzer')" id="tab-analyzer">🔎 Analisar</button>
+    <button class="nav-tab" onclick="UI.switchTab('history')"  id="tab-history">📋 Histórico</button>
+    <button class="nav-tab hidden" onclick="UI.switchTab('admin')" id="tab-admin">⚙️ Admin</button>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+
+    <!-- ── ANALYZER TAB ── -->
+    <div id="tab-content-analyzer">
+      <div class="analyzer-hero">
+        <h1>Analisar RTP do Jogo</h1>
+        <p>Digite o nome de qualquer slot para obter análise completa de RTP, volatilidade e risco.</p>
+      </div>
+
+      <div class="search-card">
+        <div class="search-row">
+          <input class="search-input" id="gameInput" type="text"
+            placeholder="Ex: Sweet Bonanza, Gates of Olympus…"
+            onkeydown="if(event.key==='Enter') Engine.analyze()" />
+          <button class="btn-analyze" id="btnAnalyze" onclick="Engine.analyze()">Analisar RTP</button>
+        </div>
+        <div class="quick-games" id="quickGames"></div>
+      </div>
+
+      <div id="resultsSection" class="results-section hidden"></div>
+    </div>
+
+    <!-- ── HISTORY TAB ── -->
+    <div id="tab-content-history" class="hidden">
+      <div class="section-title">📋 Histórico de Análises</div>
+      <div id="historyList"></div>
+    </div>
+
+    <!-- ── ADMIN TAB ── -->
+    <div id="tab-content-admin" class="hidden">
+      <div class="section-title">⚙️ Painel Administrativo</div>
+
+      <!-- Stats overview -->
+      <div class="admin-grid" id="adminStats"></div>
+
+      <div class="section-title">👥 Gerenciamento de Usuários</div>
+      <div class="users-table-wrap">
+        <table class="users-table" id="usersTable">
+          <thead>
+            <tr>
+              <th>Usuário</th>
+              <th>Tipo</th>
+              <th>Status</th>
+              <th>Análises</th>
+              <th>Limite</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    ⚠️ Ferramenta baseada em simulação estatística. Não garante resultados reais. | RTP Insight PRO © 2024
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════════════
+     LOADING OVERLAY
+══════════════════════════════════════════ -->
+<div id="loadingOverlay" class="hidden">
+  <div class="loader-circle"></div>
+  <div class="loader-bar-wrap"><div class="loader-bar" id="loaderBar"></div></div>
+  <div class="loader-msg" id="loaderMsg">Inicializando motor de análise...</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     LIMIT WALL
+══════════════════════════════════════════ -->
+<div id="limitWall" class="hidden">
+  <div class="wall-card">
+    <div class="wall-icon">🔒</div>
+    <h2>Limite de Análises Atingido</h2>
+    <p id="wallMsg">Você atingiu o limite de análises do plano teste. Solicite a liberação do acesso completo via WhatsApp.</p>
+    <a id="btnWhatsApp" href="#" target="_blank" class="btn-wa">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M11.999 2C6.477 2 2 6.477 2 12c0 1.988.575 3.842 1.57 5.404L2 22l4.744-1.545C8.126 21.44 10.014 22 12 22c5.523 0 10-4.477 10-10S17.522 2 11.999 2zm0 18c-1.849 0-3.555-.54-4.975-1.465l-.356-.215-3.668 1.195 1.23-3.562-.232-.366A7.977 7.977 0 014 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/></svg>
+      Solicitar Liberação
+    </a>
+    <button class="wall-close" onclick="UI.closeWall()">Fechar</button>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   RTP INSIGHT PRO — Motor Completo
+   Módulos: DB, Auth, Engine, UI
+═══════════════════════════════════════════════════════════════ */
+
+/* ───────────────────────────────────────────
+   MÓDULO: DB — Base de dados e persistência
+─────────────────────────────────────────── */
+const DB = (() => {
+
+  /* ─── Banco inicial de jogos conhecidos ─── */
+  const GAMES_DB = [
+    { name: 'Sweet Bonanza',        provider: 'Pragmatic Play',  rtp: 96.51, volatility: 'Alta' },
+    { name: 'Gates of Olympus',     provider: 'Pragmatic Play',  rtp: 96.50, volatility: 'Alta' },
+    { name: 'The Dog House',        provider: 'Pragmatic Play',  rtp: 96.51, volatility: 'Alta' },
+    { name: 'Starlight Princess',   provider: 'Pragmatic Play',  rtp: 96.50, volatility: 'Alta' },
+    { name: 'Big Bass Bonanza',     provider: 'Pragmatic Play',  rtp: 96.71, volatility: 'Alta' },
+    { name: 'Wild West Gold',       provider: 'Pragmatic Play',  rtp: 96.51, volatility: 'Alta' },
+    { name: 'Wanted Dead or Wild',  provider: 'Hacksaw Gaming',  rtp: 96.38, volatility: 'Alta' },
+    { name: 'Chaos Crew',           provider: 'Hacksaw Gaming',  rtp: 96.00, volatility: 'Alta' },
+    { name: 'Sticky Bombs',         provider: 'Hacksaw Gaming',  rtp: 96.50, volatility: 'Alta' },
+    { name: 'Piggy Riches',         provider: 'NetEnt',          rtp: 96.40, volatility: 'Média' },
+    { name: 'Starburst',            provider: 'NetEnt',          rtp: 96.10, volatility: 'Baixa' },
+    { name: 'Gonzo\'s Quest',       provider: 'NetEnt',          rtp: 95.97, volatility: 'Média' },
+    { name: 'Dead or Alive 2',      provider: 'NetEnt',          rtp: 96.82, volatility: 'Alta' },
+    { name: 'Book of Dead',         provider: 'Play\'n GO',      rtp: 96.21, volatility: 'Alta' },
+    { name: 'Rise of Olympus',      provider: 'Play\'n GO',      rtp: 96.70, volatility: 'Alta' },
+    { name: 'Fire Joker',           provider: 'Play\'n GO',      rtp: 96.15, volatility: 'Alta' },
+    { name: 'Reactoonz',            provider: 'Play\'n GO',      rtp: 96.51, volatility: 'Alta' },
+    { name: 'Aztec Gems',           provider: 'Pragmatic Play',  rtp: 96.52, volatility: 'Alta' },
+    { name: 'Fortune Tiger',        provider: 'PG Soft',         rtp: 96.81, volatility: 'Alta' },
+    { name: 'Fortune Mouse',        provider: 'PG Soft',         rtp: 96.79, volatility: 'Média' },
+    { name: 'Mahjong Ways',         provider: 'PG Soft',         rtp: 96.95, volatility: 'Média' },
+    { name: 'Mahjong Ways 2',       provider: 'PG Soft',         rtp: 96.95, volatility: 'Alta' },
+    { name: 'Ganesha Gold',         provider: 'PG Soft',         rtp: 96.74, volatility: 'Média' },
+    { name: 'Joker\'s Jewels',      provider: 'Pragmatic Play',  rtp: 96.50, volatility: 'Baixa' },
+    { name: 'Leprechaun Song',      provider: 'Pragmatic Play',  rtp: 96.50, volatility: 'Alta' },
+    { name: 'Tombstone RIP',        provider: 'Nolimit City',    rtp: 96.12, volatility: 'Alta' },
+    { name: 'xNudge Pumpkin',       provider: 'Nolimit City',    rtp: 96.02, volatility: 'Alta' },
+    { name: 'Punk Toilet',          provider: 'Nolimit City',    rtp: 96.00, volatility: 'Alta' },
+    { name: 'Mega Moolah',          provider: 'Microgaming',     rtp: 88.12, volatility: 'Média' },
+    { name: 'Immortal Romance',     provider: 'Microgaming',     rtp: 96.86, volatility: 'Alta' },
+    { name: 'Thunderstruck II',     provider: 'Microgaming',     rtp: 96.65, volatility: 'Média' },
+    { name: 'Bonanza',              provider: 'Big Time Gaming', rtp: 96.00, volatility: 'Alta' },
+    { name: 'Extra Chilli',         provider: 'Big Time Gaming', rtp: 96.02, volatility: 'Alta' },
+    { name: 'White Rabbit',         provider: 'Big Time Gaming', rtp: 97.24, volatility: 'Alta' },
+    { name: 'Shark Splash',         provider: 'Quickspin',       rtp: 96.08, volatility: 'Alta' },
+    { name: 'Crystal Land',         provider: 'Playson',         rtp: 96.00, volatility: 'Alta' },
+    { name: 'Wolf Gold',            provider: 'Pragmatic Play',  rtp: 96.01, volatility: 'Média' },
+    { name: 'Fruit Party',          provider: 'Pragmatic Play',  rtp: 96.47, volatility: 'Alta' },
+    { name: 'Fruit Party 2',        provider: 'Pragmatic Play',  rtp: 96.47, volatility: 'Alta' },
+    { name: 'Spaceman',             provider: 'Pragmatic Play',  rtp: 96.00, volatility: 'Baixa' },
+    { name: 'Aviator',              provider: 'Spribe',          rtp: 97.00, volatility: 'Baixa' },
+    { name: 'Buffalo King',         provider: 'Pragmatic Play',  rtp: 96.52, volatility: 'Alta' },
+    { name: 'John Hunter',          provider: 'Pragmatic Play',  rtp: 96.50, volatility: 'Alta' },
+    { name: 'Floating Dragon',      provider: 'Pragmatic Play',  rtp: 96.60, volatility: 'Alta' },
+    { name: 'Christmas Carol',      provider: 'Pragmatic Play',  rtp: 96.13, volatility: 'Alta' },
+    { name: 'Temujin Treasures',    provider: 'Pragmatic Play',  rtp: 96.53, volatility: 'Alta' },
+    { name: 'Mustang Gold',         provider: 'Pragmatic Play',  rtp: 96.53, volatility: 'Alta' },
+    { name: 'Money Train 3',        provider: 'Relax Gaming',    rtp: 96.00, volatility: 'Alta' },
+    { name: 'Money Train 2',        provider: 'Relax Gaming',    rtp: 96.40, volatility: 'Alta' },
+    { name: 'Hot Fiesta',           provider: 'Pragmatic Play',  rtp: 96.62, volatility: 'Alta' },
+    { name: 'The Hand of Midas',    provider: 'Pragmatic Play',  rtp: 96.63, volatility: 'Baixa' },
+    { name: 'Eye of Cleopatra',     provider: 'Pragmatic Play',  rtp: 96.52, volatility: 'Alta' },
+  ];
+
+  const PROVIDERS = [
+    'Pragmatic Play','PG Soft','Hacksaw Gaming','Microgaming','NetEnt',
+    'Play\'n GO','Yggdrasil','Red Tiger','Nolimit City','Evolution',
+    'Quickspin','Blueprint Gaming','Elk Studios','Big Time Gaming',
+    'Relax Gaming','Playson','Spribe','Push Gaming'
+  ];
+
+  /* ─── Usuários padrão ─── */
+  const DEFAULT_USERS = [
+    {
+      id: 'u001',
+      email: 'picolocristopher@gmail.com',
+      password: 'Cris@101593',
+      type: 'admin',
+      status: 'ativo',
+      limit: Infinity,
+      used: 0
+    },
+    {
+      id: 'u002',
+      email: 'demo@rtpinsight.com',
+      password: 'demo123',
+      type: 'user',
+      status: 'teste',
+      limit: 2,
+      used: 0
+    },
+    {
+      id: 'u003',
+      email: 'vip@rtpinsight.com',
+      password: 'vip123',
+      type: 'user',
+      status: 'ativo',
+      limit: Infinity,
+      used: 0
+    }
+  ];
+
+  /* ─── Inicialização do storage ─── */
+  function init() {
+    if (!localStorage.getItem('rtp_users')) {
+      localStorage.setItem('rtp_users', JSON.stringify(DEFAULT_USERS));
+    }
+    if (!localStorage.getItem('rtp_history')) {
+      localStorage.setItem('rtp_history', JSON.stringify([]));
+    }
+  }
+
+  /* ─── Getters/Setters ─── */
+  function getUsers()       { return JSON.parse(localStorage.getItem('rtp_users') || '[]'); }
+  function saveUsers(u)     { localStorage.setItem('rtp_users', JSON.stringify(u)); }
+  function getHistory()     { return JSON.parse(localStorage.getItem('rtp_history') || '[]'); }
+  function saveHistory(h)   { localStorage.setItem('rtp_history', JSON.stringify(h)); }
+  function getSession()     { return JSON.parse(localStorage.getItem('rtp_session') || 'null'); }
+  function setSession(u)    { localStorage.setItem('rtp_session', JSON.stringify(u)); }
+  function clearSession()   { localStorage.removeItem('rtp_session'); }
+
+  function findUser(email, password) {
+    return getUsers().find(u => u.email === email && u.password === password) || null;
+  }
+
+  function getUserById(id) {
+    return getUsers().find(u => u.id === id) || null;
+  }
+
+  function updateUser(updatedUser) {
+    const users = getUsers();
+    const idx = users.findIndex(u => u.id === updatedUser.id);
+    if (idx !== -1) { users[idx] = updatedUser; saveUsers(users); }
+  }
+
+  function addHistoryEntry(entry) {
+    const h = getHistory();
+    h.unshift({ ...entry, date: new Date().toLocaleString('pt-BR') });
+    if (h.length > 100) h.pop();
+    saveHistory(h);
+  }
+
+  function lookupGame(name) {
+    const n = name.trim().toLowerCase();
+    return GAMES_DB.find(g => g.name.toLowerCase() === n) || null;
+  }
+
+  function fuzzyGame(name) {
+    const n = name.trim().toLowerCase();
+    return GAMES_DB.find(g => g.name.toLowerCase().includes(n) || n.includes(g.name.toLowerCase())) || null;
+  }
+
+  function randomProvider() {
+    return PROVIDERS[Math.floor(Math.random() * PROVIDERS.length)];
+  }
+
+  function getTopGames(n=8) {
+    // Return n random known games as quick chips
+    const shuffled = [...GAMES_DB].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, n).map(g => g.name);
+  }
+
+  return { init, getUsers, saveUsers, getHistory, saveHistory,
+           getSession, setSession, clearSession,
+           findUser, getUserById, updateUser,
+           addHistoryEntry, lookupGame, fuzzyGame,
+           randomProvider, getTopGames, GAMES_DB };
+})();
+
+/* ───────────────────────────────────────────
+   MÓDULO: Auth — Autenticação e sessão
+─────────────────────────────────────────── */
+const Auth = (() => {
+
+  function login() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const pass  = document.getElementById('loginPass').value;
+    const errEl = document.getElementById('loginError');
+    errEl.classList.add('hidden');
+
+    if (!email || !pass) {
+      showError('Preencha todos os campos.'); return;
+    }
+
+    const user = DB.findUser(email, pass);
+    if (!user) { showError('Email ou senha incorretos.'); return; }
+    if (user.status === 'bloqueado') {
+      showError('Conta bloqueada. Entre em contato com o suporte.'); return;
+    }
+
+    DB.setSession(user);
+    UI.showApp(user);
+  }
+
+  function logout() {
+    DB.clearSession();
+    UI.showLogin();
+  }
+
+  function currentUser() {
+    const s = DB.getSession();
+    if (!s) return null;
+    // sempre recarrega do storage (para pegar updates)
+    return DB.getUserById(s.id);
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('loginError');
+    el.textContent = msg;
+    el.classList.remove('hidden');
+  }
+
+  // Permite pressionar Enter no campo de senha
+  document.addEventListener('DOMContentLoaded', () => {
+    const passInput = document.getElementById('loginPass');
+    if (passInput) passInput.addEventListener('keydown', e => { if(e.key==='Enter') login(); });
+  });
+
+  return { login, logout, currentUser };
+})();
+
+/* ───────────────────────────────────────────
+   MÓDULO: Engine — Motor de análise de RTP
+─────────────────────────────────────────── */
+const Engine = (() => {
+
+  const MESSAGES = [
+    'Identificando provedor...',
+    'Analisando volatilidade...',
+    'Calculando RTP...',
+    'Processando algoritmo...',
+    'Gerando relatório...'
+  ];
+
+  /* ─── Lógica de classificação de risco ─── */
+  function classifyRisk(rtp, volatility) {
+    const volScore = { 'Baixa': 0, 'Média': 1, 'Alta': 2 }[volatility] ?? 1;
+    // RTP ≥ 96 = bom; abaixo de 92 = ruim
+    const rtpScore = rtp >= 96 ? 0 : rtp >= 93 ? 1 : 2;
+    const combined = (volScore * 2 + rtpScore) / 3; // 0–2 normalizado
+    if (combined < 0.7)  return 'Baixo';
+    if (combined < 1.35) return 'Moderado';
+    return 'Alto';
+  }
+
+  /* ─── Gera dados para jogo desconhecido ─── */
+  function generateData(name) {
+    const seed = [...name].reduce((a,c) => a + c.charCodeAt(0), 0);
+    const rand = (min, max) => min + ((seed * 9301 + 49297) % 233280 / 233280) * (max - min);
+    const rtp  = parseFloat((rand(88, 97)).toFixed(2));
+    const vols = ['Baixa', 'Média', 'Alta'];
+    const vol  = vols[Math.floor(rand(0, 3))];
+    return { rtp, volatility: vol };
+  }
+
+  /* ─── Gera probabilidades a partir de RTP e volatilidade ─── */
+  function computeProbabilities(rtp, volatility) {
+    // Probabilidade de ganho base = RTP; ajusta por volatilidade
+    const volAdj = { 'Baixa': 0.95, 'Média': 1.0, 'Alta': 0.88 }[volatility] ?? 1;
+    const winBase = parseFloat((rtp * volAdj / 100 * 100).toFixed(1));
+    const win = Math.min(winBase, 96.9);
+    const lose = parseFloat((100 - win).toFixed(1));
+    return { win, lose };
+  }
+
+  /* ─── Animação de loading ─── */
+  async function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    const msgEl   = document.getElementById('loaderMsg');
+    const barEl   = document.getElementById('loaderBar');
+    overlay.classList.remove('hidden');
+    barEl.style.width = '0%';
+
+    const delay = ms => new Promise(r => setTimeout(r, ms));
+    const steps = MESSAGES.length;
+
+    for (let i = 0; i < steps; i++) {
+      msgEl.textContent = MESSAGES[i];
+      barEl.style.width = `${((i+1) / steps) * 100}%`;
+      const wait = 400 + Math.random() * 400;
+      await delay(wait);
+    }
+    await delay(300);
+    overlay.classList.add('hidden');
+  }
+
+  /* ─── Análise principal ─── */
+  async function analyze() {
+    const user = Auth.currentUser();
+    if (!user) return;
+
+    // Checar limite
+    if (user.status === 'teste' && user.used >= user.limit) {
+      UI.showLimitWall(user);
+      return;
+    }
+
+    const name = document.getElementById('gameInput').value.trim();
+    if (!name) {
+      document.getElementById('gameInput').focus();
+      return;
+    }
+
+    document.getElementById('btnAnalyze').disabled = true;
+
+    // Loading
+    await showLoading();
+
+    // Lookup
+    let known = DB.lookupGame(name) || DB.fuzzyGame(name);
+    let provider, rtp, volatility;
+
+    if (known) {
+      provider   = known.provider;
+      rtp        = known.rtp;
+      volatility = known.volatility;
+    } else {
+      provider   = DB.randomProvider();
+      const gen  = generateData(name);
+      rtp        = gen.rtp;
+      volatility = gen.volatility;
+    }
+
+    const risk = classifyRisk(rtp, volatility);
+    const prob = computeProbabilities(rtp, volatility);
+
+    const result = {
+      gameName:   known ? known.name : name,
+      provider,
+      rtp,
+      volatility,
+      risk,
+      winProb:    prob.win,
+      loseProb:   prob.lose,
+      isKnown:    !!known
+    };
+
+    // Incrementar uso
+    user.used = (user.used || 0) + 1;
+    DB.updateUser(user);
+    DB.setSession(user);
+
+    // Salvar histórico
+    DB.addHistoryEntry(result);
+
+    // Exibir resultado
+    UI.renderResult(result);
+    UI.updateUsagePill(user);
+
+    document.getElementById('btnAnalyze').disabled = false;
+  }
+
+  return { analyze, classifyRisk, computeProbabilities };
+})();
+
+/* ───────────────────────────────────────────
+   MÓDULO: UI — Interface e renderização
+─────────────────────────────────────────── */
+const UI = (() => {
+
+  /* ─── Mostrar login ─── */
+  function showLogin() {
+    document.getElementById('loginPage').classList.remove('hidden');
+    document.getElementById('appPage').classList.add('hidden');
+    document.getElementById('loginEmail').value = '';
+    document.getElementById('loginPass').value  = '';
+    document.getElementById('loginError').classList.add('hidden');
+  }
+
+  /* ─── Mostrar app ─── */
+  function showApp(user) {
+    document.getElementById('loginPage').classList.add('hidden');
+    document.getElementById('appPage').classList.remove('hidden');
+
+    // Avatar e nome
+    const initials = user.email.substring(0,2).toUpperCase();
+    document.getElementById('userAvatar').textContent    = initials;
+    document.getElementById('userNameLabel').textContent = user.email.split('@')[0];
+
+    // Aba admin
+    const adminTab = document.getElementById('tab-admin');
+    if (user.type === 'admin') adminTab.classList.remove('hidden');
+    else adminTab.classList.add('hidden');
+
+    updateUsagePill(user);
+    renderQuickGames();
+    switchTab('analyzer');
+  }
+
+  /* ─── Usage pill ─── */
+  function updateUsagePill(user) {
+    const el = document.getElementById('usageText');
+    if (user.type === 'admin' || user.status === 'ativo') {
+      el.textContent = 'Análises ilimitadas';
+      el.parentElement.querySelector('.dot').style.background = '#10b981';
+    } else {
+      const left = Math.max(0, user.limit - user.used);
+      el.textContent = `${user.used}/${user.limit} análises`;
+      if (left === 0) el.parentElement.querySelector('.dot').style.background = '#ef4444';
+      else if (left === 1) el.parentElement.querySelector('.dot').style.background = '#f59e0b';
+    }
+  }
+
+  /* ─── Quick games chips ─── */
+  function renderQuickGames() {
+    const games = DB.getTopGames(10);
+    const wrap = document.getElementById('quickGames');
+    wrap.innerHTML = games.map(g =>
+      `<button class="qg-chip" onclick="document.getElementById('gameInput').value='${g.replace(/'/g,"\\'")}'">${g}</button>`
+    ).join('');
+  }
+
+  /* ─── Trocar aba ─── */
+  function switchTab(tab) {
+    ['analyzer','history','admin'].forEach(t => {
+      document.getElementById(`tab-content-${t}`).classList.add('hidden');
+      document.getElementById(`tab-${t}`)?.classList.remove('active');
+    });
+    document.getElementById(`tab-content-${tab}`).classList.remove('hidden');
+    document.getElementById(`tab-${tab}`)?.classList.add('active');
+
+    if (tab === 'history') renderHistory();
+    if (tab === 'admin')   renderAdmin();
+  }
+
+  /* ─── Renderizar resultado ─── */
+  function renderResult(r) {
+    const section = document.getElementById('resultsSection');
+    section.classList.remove('hidden');
+
+    const riskClass = r.risk === 'Baixo' ? 'risk-low' : r.risk === 'Moderado' ? 'risk-medium' : 'risk-high';
+    const volIcon   = r.volatility === 'Alta' ? '🔴' : r.volatility === 'Média' ? '🟡' : '🟢';
+    const barColor  = r.rtp >= 95 ? 'bar-green' : r.rtp >= 92 ? 'bar-yellow' : 'bar-red';
+    const winColor  = r.winProb >= 70 ? 'bar-green' : r.winProb >= 55 ? 'bar-yellow' : 'bar-red';
+    const loseColor = 'bar-red';
+
+    section.innerHTML = `
+      <div class="results-title">
+        <div class="dot-live"></div>
+        Resultado da Análise
+        ${r.isKnown ? '<span style="font-size:12px;color:var(--text2);font-weight:400;font-family:var(--font-mono)">• Dados verificados</span>' : '<span style="font-size:12px;color:var(--text2);font-weight:400;font-family:var(--font-mono)">• Dados simulados</span>'}
+      </div>
+      <div class="result-grid">
+        <!-- Card Principal -->
+        <div class="r-card" style="grid-column: span 1;">
+          <div class="r-card-header">
+            <div>
+              <div class="r-game-name">${r.gameName}</div>
+              <div class="r-provider">🎮 ${r.provider}</div>
+            </div>
+            <div class="risk-badge ${riskClass}">Risco ${r.risk}</div>
+          </div>
+          <div class="rtp-block">
+            <div class="rtp-label">RTP — Return to Player</div>
+            <div class="rtp-value">${r.rtp.toFixed(2)}<span class="rtp-pct">%</span></div>
+          </div>
+          <div class="info-grid">
+            <div class="info-cell">
+              <div class="lbl">Volatilidade</div>
+              <div class="val">${volIcon} ${r.volatility}</div>
+            </div>
+            <div class="info-cell">
+              <div class="lbl">Risco</div>
+              <div class="val">${r.risk}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card Probabilidades -->
+        <div class="r-card">
+          <div style="font-family:var(--font-head);font-size:16px;font-weight:700;margin-bottom:20px;">📊 Probabilidades</div>
+          <div class="stat-row">
+            <div class="stat-label">
+              <span class="name">✅ Probabilidade de Ganho</span>
+              <span class="val" style="color:#10b981">${r.winProb.toFixed(1)}%</span>
+            </div>
+            <div class="bar-track"><div class="bar-fill ${winColor}" style="width:0%" data-target="${r.winProb}"></div></div>
+          </div>
+          <div class="stat-row">
+            <div class="stat-label">
+              <span class="name">❌ Probabilidade de Perda</span>
+              <span class="val" style="color:#ef4444">${r.loseProb.toFixed(1)}%</span>
+            </div>
+            <div class="bar-track"><div class="bar-fill ${loseColor}" style="width:0%" data-target="${r.loseProb}"></div></div>
+          </div>
+          <div class="stat-row" style="margin-top:8px">
+            <div class="stat-label">
+              <span class="name">🎰 RTP Score</span>
+              <span class="val" style="color:var(--accent)">${r.rtp.toFixed(2)}%</span>
+            </div>
+            <div class="bar-track"><div class="bar-fill ${barColor}" style="width:0%" data-target="${r.rtp}"></div></div>
+          </div>
+
+          <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
+            <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;">Análise de Risco</div>
+            ${getRiskAnalysis(r)}
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Animar barras com delay
+    setTimeout(() => {
+      section.querySelectorAll('.bar-fill[data-target]').forEach(bar => {
+        bar.style.width = bar.dataset.target + '%';
+      });
+    }, 80);
+  }
+
+  function getRiskAnalysis(r) {
+    const bullets = [];
+    if (r.volatility === 'Alta') bullets.push('⚠️ Alta volatilidade: ganhos irregulares e espaçados');
+    else if (r.volatility === 'Média') bullets.push('⚡ Volatilidade média: equilíbrio entre frequência e valor');
+    else bullets.push('✅ Baixa volatilidade: ganhos frequentes, menores valores');
+
+    if (r.rtp >= 96)       bullets.push('✅ RTP elevado: retorno competitivo ao jogador');
+    else if (r.rtp >= 93)  bullets.push('⚡ RTP médio: retorno razoável');
+    else                   bullets.push('⚠️ RTP abaixo da média: maior vantagem da casa');
+
+    if (r.risk === 'Alto') bullets.push('🔴 Sessões curtas recomendadas com banca controlada');
+    else if (r.risk === 'Moderado') bullets.push('🟡 Gerenciamento de banca recomendado');
+    else bullets.push('🟢 Perfil mais conservador, adequado para longas sessões');
+
+    return bullets.map(b => `<div style="font-size:12px;color:var(--text2);margin-bottom:6px;">${b}</div>`).join('');
+  }
+
+  /* ─── Histórico ─── */
+  function renderHistory() {
+    const list = document.getElementById('historyList');
+    const history = DB.getHistory();
+
+    if (history.length === 0) {
+      list.innerHTML = `
+        <div class="empty-state">
+          <div class="big">📋</div>
+          <h3>Nenhuma análise ainda</h3>
+          <p>Suas análises aparecerão aqui. Vá para a aba Analisar para começar.</p>
+        </div>`;
+      return;
+    }
+
+    list.innerHTML = `<div class="history-list">` + history.map((h, i) => {
+      const riskClass = h.risk === 'Baixo' ? 'risk-low' : h.risk === 'Moderado' ? 'risk-medium' : 'risk-high';
+      return `
+        <div class="history-item">
+          <div class="h-num">${i+1}</div>
+          <div class="h-info">
+            <div class="h-game">${h.gameName}</div>
+            <div class="h-prov">${h.provider}</div>
+          </div>
+          <div class="risk-badge ${riskClass}" style="font-size:10px">${h.risk}</div>
+          <div class="h-vol">${h.volatility}</div>
+          <div class="h-rtp">${h.rtp?.toFixed(2)}%</div>
+          <div class="h-date">${h.date}</div>
+        </div>`;
+    }).join('') + `</div>`;
+  }
+
+  /* ─── Painel Admin ─── */
+  function renderAdmin() {
+    const users   = DB.getUsers();
+    const total   = users.length;
+    const active  = users.filter(u => u.status === 'ativo').length;
+    const blocked = users.filter(u => u.status === 'bloqueado').length;
+    const trial   = users.filter(u => u.status === 'teste').length;
+    const history = DB.getHistory();
+
+    // Stats cards
+    document.getElementById('adminStats').innerHTML = `
+      <div class="stat-card accent"><div class="sc-label">Total de Usuários</div><div class="sc-val">${total}</div></div>
+      <div class="stat-card green"><div class="sc-label">Ativos</div><div class="sc-val">${active}</div></div>
+      <div class="stat-card gold"><div class="sc-label">Em Teste</div><div class="sc-val">${trial}</div></div>
+      <div class="stat-card red"><div class="sc-label">Bloqueados</div><div class="sc-val">${blocked}</div></div>
+      <div class="stat-card accent"><div class="sc-label">Análises Totais</div><div class="sc-val">${history.length}</div></div>
+    `;
+
+    // Tabela de usuários
+    const tbody = document.getElementById('usersTableBody');
+    tbody.innerHTML = users.map(u => {
+      const statusClass = { ativo: 's-ativo', teste: 's-teste', bloqueado: 's-bloqueado' }[u.status] || 's-teste';
+      const limitLabel  = u.limit === Infinity ? '∞' : u.limit;
+      const currentUser = Auth.currentUser();
+      const isSelf = u.id === currentUser?.id;
+
+      const actions = [];
+      if (u.status !== 'ativo')      actions.push(`<button class="admin-btn btn-activate" onclick="Admin.activate('${u.id}')">✅ Liberar</button>`);
+      if (u.status !== 'bloqueado' && !isSelf) actions.push(`<button class="admin-btn btn-block" onclick="Admin.block('${u.id}')">🚫 Bloquear</button>`);
+      actions.push(`<button class="admin-btn btn-reset" onclick="Admin.resetUsage('${u.id}')">↺ Zerar</button>`);
+
+      return `
+        <tr>
+          <td>
+            <div style="font-weight:600;font-size:13px">${u.email}</div>
+            <div style="font-size:11px;color:var(--text3);font-family:var(--font-mono)">${u.id}</div>
+          </td>
+          <td><span style="background:rgba(99,102,241,.12);color:#a5b4fc;border:1px solid rgba(99,102,241,.25);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600">${u.type}</span></td>
+          <td><span class="status-badge ${statusClass}">${u.status}</span></td>
+          <td><span style="font-family:var(--font-mono);font-size:13px">${u.used || 0}</span></td>
+          <td><span style="font-family:var(--font-mono);font-size:13px">${limitLabel}</span></td>
+          <td>${actions.join('')}</td>
+        </tr>`;
+    }).join('');
+  }
+
+  /* ─── Limit Wall ─── */
+  function showLimitWall(user) {
+    const wall  = document.getElementById('limitWall');
+    const msg   = document.getElementById('wallMsg');
+    const btnWa = document.getElementById('btnWhatsApp');
+    const waMsg = encodeURIComponent(`Olá, quero liberar meu acesso ao RTP Insight PRO. Meu email é: ${user.email}`);
+
+    msg.textContent = `Você utilizou ${user.used} de ${user.limit} análises disponíveis no plano teste. Solicite a liberação do acesso completo.`;
+    btnWa.href      = `https://wa.me/5554984443146?text=${waMsg}`;
+    wall.classList.remove('hidden');
+  }
+
+  function closeWall() {
+    document.getElementById('limitWall').classList.add('hidden');
+  }
+
+  return { showLogin, showApp, updateUsagePill, renderQuickGames, switchTab, renderResult, renderHistory, renderAdmin, showLimitWall, closeWall };
+})();
+
+/* ───────────────────────────────────────────
+   MÓDULO: Admin — Ações administrativas
+─────────────────────────────────────────── */
+const Admin = (() => {
+
+  function activate(id) {
+    const user = DB.getUserById(id);
+    if (!user) return;
+    user.status = 'ativo';
+    user.limit  = Infinity;
+    DB.updateUser(user);
+    UI.renderAdmin();
+    UI.updateUsagePill(Auth.currentUser());
+  }
+
+  function block(id) {
+    const current = Auth.currentUser();
+    if (id === current?.id) { alert('Você não pode bloquear sua própria conta.'); return; }
+    const user = DB.getUserById(id);
+    if (!user) return;
+    user.status = 'bloqueado';
+    DB.updateUser(user);
+    UI.renderAdmin();
+  }
+
+  function resetUsage(id) {
+    const user = DB.getUserById(id);
+    if (!user) return;
+    user.used = 0;
+    DB.updateUser(user);
+    UI.renderAdmin();
+    if (id === Auth.currentUser()?.id) UI.updateUsagePill(Auth.currentUser());
+  }
+
+  return { activate, block, resetUsage };
+})();
+
+/* ───────────────────────────────────────────
+   INICIALIZAÇÃO
+─────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+  DB.init();
+
+  const session = DB.getSession();
+  if (session) {
+    const user = DB.getUserById(session.id);
+    if (user && user.status !== 'bloqueado') {
+      UI.showApp(user);
+    } else {
+      DB.clearSession();
+      UI.showLogin();
+    }
+  } else {
+    UI.showLogin();
+  }
+});
+</script>
+</body>
+</html>
